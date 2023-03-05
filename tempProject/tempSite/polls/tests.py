@@ -1,18 +1,19 @@
 from django.test import TestCase
 from django.utils import timezone
+from django.urls import reverse
 from .models import Question
 import datetime
 
 # Create your tests here.
 
 
-def create_question(text, days):
+def create_question(text, day_offset):
     """
     Creates a question with text as the question_text and with an offset from
     timezone.now(). Positive days will result in future dates. Negative
     days will result in past dates.
     """
-    time = timezone.now() + datetime.timedelta(days=offset)
+    time = timezone.now() + datetime.timedelta(days=day_offset)
     return Question.objects.create(question_text=text, pub_date=time)
 
 
@@ -38,10 +39,21 @@ class QuestionModelTests(TestCase):
 class QuestionIndexViewTests(TestCase):
     
     def test_no_questions(self):
-        return 
+        # get a response
+        response = self.client.get(reverse('polls:index'))
+        # verify response status code
+        self.assertEqual(response.status_code, 200)
+        # response contains appropriate text.
+        self.assertContains(response, "No polls are available.")
+        # verify an empty query set with context latest question list
+        self.assertQuerysetEqual(response.context['latest_question_list'], [])
 
     def test_future_question(self):
-        return
+        create_question(text="Future Question", day_offset=5)
+        response = self.client.get(reverse('polls:index'))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "No polls are available.")
+        self.assertQuerysetEqual(response.context['latest_question_list'], [])
 
     def test_future_and_past_questions(self):
         return
