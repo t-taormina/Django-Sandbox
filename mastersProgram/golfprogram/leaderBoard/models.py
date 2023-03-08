@@ -20,3 +20,6 @@ class Player(models.Model):
 
 
 
+
+
+
